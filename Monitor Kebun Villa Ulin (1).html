@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Monitor Kebun Villa Ulin</title>
+<style>
+:root{--bg:#f6f7f2;--card:#fff;--tx:#1e2a1e;--mu:#6b786b;--pr:#2e7d32;--ln:#e1e6dc;--wa:#d32f2f;--am:#ef8f00;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141a14;--card:#1e271e;--tx:#e8efe8;--mu:#9aa89a;--pr:#66bb6a;--ln:#2d382d}}
+:root[data-theme="dark"]{--bg:#141a14;--card:#1e271e;--tx:#e8efe8;--mu:#9aa89a;--pr:#66bb6a;--ln:#2d382d}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--tx);font:15px/1.4 system-ui,sans-serif;padding:0 12px 130px}
+h1{font-size:18px;margin:12px 0 2px}.sub{color:var(--mu);font-size:13px;margin-bottom:10px}
+.tabs{display:flex;gap:6px;margin:8px 0;overflow-x:auto}
+.tabs button{flex:1;padding:9px 6px;border:1px solid var(--ln);background:var(--card);color:var(--tx);border-radius:10px;font-size:13px;white-space:nowrap}
+.tabs button.on{background:var(--pr);color:#fff;border-color:var(--pr)}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:10px 12px;margin:8px 0}
+.row{display:flex;align-items:center;gap:10px}.row .g{flex:1;min-width:0}
+.t{font-weight:600}.m{font-size:12.5px;color:var(--mu)}
+.ck{width:26px;height:26px;accent-color:var(--pr);flex:none}
+.late{color:var(--wa)}.soon{color:var(--am)}
+.done{opacity:.6}.done .t{text-decoration:line-through}
+select,input[type=text],input[type=number],input[type=date]{width:100%;padding:8px;border:1px solid var(--ln);border-radius:8px;background:var(--bg);color:var(--tx);font-size:14px;margin-top:6px}
+.btn{padding:9px 14px;border:0;border-radius:10px;background:var(--pr);color:#fff;font-size:14px;margin-top:6px}
+.bar{position:fixed;left:0;right:0;bottom:0;display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));background:var(--card);border-top:1px solid var(--ln)}
+.bar button{flex:1;padding:12px 2px;border:0;border-radius:10px;font-size:13px;color:#fff;background:var(--pr)}
+.bar .wa{background:#25a244}.bar .cp{background:#546e7a}
+pre{white-space:pre-wrap;font:13px/1.45 ui-monospace,monospace;background:var(--bg);padding:10px;border-radius:8px;margin:6px 0 0}
+.ft{text-align:center;color:var(--mu);font-size:13px;margin:22px 0 8px;padding-top:12px;border-top:1px solid var(--ln)}.ft b{color:var(--pr);font-size:15px}
+.gd{background:var(--card);border:1px solid var(--ln);border-radius:12px;margin:8px 0;padding:0 12px}.gd summary{padding:12px 0;font-weight:600;cursor:pointer}.gd ul{margin:4px 0 10px;padding-left:18px}.gd li{margin:3px 0;font-size:14px}.hp{border-top:1px solid var(--ln);padding:8px 0;font-size:14px}.hp b{color:var(--wa)}.hp div{margin-top:2px}
+.sm{display:flex;gap:8px}.sm>div{flex:1}label{font-size:12px;color:var(--mu)}
+</style></head><body>
+<h1>🌳 Monitor Kebun Villa Ulin</h1>
+<div class="sub" id="dt"></div>
+<div class="tabs" id="tabs"></div>
+<div id="v"></div>
+<div class="ft">Persembahan BTN165<br><b>Kang Malvie Official</b></div>
+<div class="bar"><button onclick="shareR()">📤 Bagikan</button><button class="wa" onclick="waR()">WhatsApp</button><button style="background:#1976d2" onclick="imgR()">🖼️ Gambar</button><button class="cp" onclick="copyR()">Salin</button></div>
+<script>
+var DEF=[
+{id:'mangga',n:'Mangga',e:'🥭',w:3,f:21,fn:'Kalium + kalsium + boron (pupuk daun/tanah), siram setelahnya'},
+{id:'belimbing',n:'Belimbing Madu',e:'⭐',w:2,f:21,fn:'NPK tinggi kalium + pupuk organik'},
+{id:'lengkeng',n:'Lengkeng',e:'🍇',w:3,f:30,fn:'Kalium + boron, kurangi nitrogen'},
+{id:'durian',n:'Durian',e:'🌵',w:3,f:30,fn:'Kalium + kalsium + organik; jangan sampai tergenang'},
+{id:'nangka',n:'Nangka',e:'🍈',w:3,f:30,fn:'NPK seimbang + kalium + organik'},
+{id:'jeruk',n:'Jeruk Purut',e:'🍋',w:3,f:30,fn:'NPK seimbang + organik'},
+{id:'rambutan',n:'Rambutan',e:'🔴',w:3,f:30,fn:'Kalium + boron, kurangi nitrogen saat berbuah'}];
+var S={plants:DEF,logs:[]},tab='h',range=7;
+try{var r=localStorage.getItem('kebun1');if(r)S=JSON.parse(r)}catch(e){}
+DEF.forEach(function(d){if(!S.plants.some(function(p){return p.id==d.id}))S.plants.push(JSON.parse(JSON.stringify(d)))});
+S.alarms=S.alarms||[];
+function save(){try{localStorage.setItem('kebun1',JSON.stringify(S))}catch(e){}}
+function key(d){d=d||new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function pd(k){var a=k.split('-');return new Date(+a[0],a[1]-1,+a[2])}
+function diff(a,b){return Math.round((pd(a)-pd(b))/864e5)}
+function fmt(k){return pd(k).toLocaleDateString('id-ID',{weekday:'short',day:'numeric',month:'short'})}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+var T=key(),TN={w:'Siram',f:'Pupuk'};
+function last(p,t){var x=S.logs.filter(function(l){return l.p==p&&l.t==t}).map(function(l){return l.d}).sort();return x.length?x[x.length-1]:null}
+function nextD(p,t){var l=last(p.id,t),o=p.o&&p.o[t];if(o&&(!l||l<o))return o;if(!l)return T;var d=pd(l);d.setDate(d.getDate()+(t=='w'?p.w:p.f));return key(d)}
+function tasks(){var a=[];S.plants.forEach(function(p){['w','f'].forEach(function(t){a.push({p:p,t:t,nx:nextD(p,t)})})});return a}
+function doneToday(p,t){return S.logs.some(function(l){return l.p==p&&l.t==t&&l.d==T})}
+function toggle(pid,t){var i=-1;S.logs.forEach(function(l,j){if(l.p==pid&&l.t==t&&l.d==T)i=j});if(i>=0)S.logs.splice(i,1);else S.logs.push({p:pid,t:t,d:T});save();draw()}
+function nm(id){return S.plants.filter(function(p){return p.id==id})[0]}
+function tabsH(){var L={h:'✅ Hari Ini',a:'⏰ Alarm',p:'🔍 Pantau',j:'📅 Jadwal',d:'🌱 Data Pohon',c:'📒 Catatan',g:'📚 Panduan',l:'📄 Laporan'},h='';for(var k in L)h+='<button class="'+(k==tab?'on':'')+'" onclick="tab=\''+k+'\';draw()">'+L[k]+'</button>';return h}
+function stat(nx){var d=diff(nx,T);return d<0?'<span class="late">Terlambat '+(-d)+' hari</span>':d==0?'<span class="soon">Hari ini</span>':'<span>'+d+' hari lagi ('+fmt(nx)+')</span>'}
+function viewH(){
+var due=tasks().filter(function(x){return diff(x.nx,T)<=0||doneToday(x.p.id,x.t)}).sort(function(a,b){return a.nx<b.nx?-1:1}),h='';
+if(!due.length)h='<div class="card m">Tidak ada tugas hari ini 🎉</div>';
+due.forEach(function(x){var dn=doneToday(x.p.id,x.t);
+h+='<div class="card row '+(dn?'done':'')+'"><input class="ck" type="checkbox" '+(dn?'checked':'')+' onchange="toggle(\''+x.p.id+'\',\''+x.t+'\')"><div class="g"><div class="t">'+x.p.e+' '+(x.t=='w'?'Siram ':'Pupuk ')+x.p.n+'</div><div class="m">'+(x.t=='w'?'Area bawah tajuk, 4-5 titik, aliran kecil ±25-30 menit':esc(x.p.fn))+'</div>'+(dn?'<div class="m">Selesai hari ini</div>':'<div class="m">'+stat(x.nx)+'</div>')+'</div></div>'});
+var tot=due.length,dn=due.filter(function(x){return doneToday(x.p.id,x.t)}).length;
+return '<div class="card"><b>Progres: '+dn+' / '+tot+'</b></div>'+h}
+var KD=['Baik','Rontok sedikit','Rontok banyak','Ada hama','Ada penyakit/busuk','Buah pecah'];
+function viewP(){var h='';S.plants.forEach(function(p){var m=S.logs.filter(function(l){return l.p==p.id&&l.t=='m'}).sort(function(a,b){return a.d<b.d?-1:1}),lm=m[m.length-1];
+h+='<div class="card"><div class="t">'+p.e+' '+p.n+'</div><div class="m">'+(lm?'Terakhir '+fmt(lm.d)+': '+esc(lm.c)+(lm.n?' - '+esc(lm.n):''):'Belum ada catatan')+'</div><select id="c_'+p.id+'">'+KD.map(function(k){return'<option>'+k+'</option>'}).join('')+'</select><input type="text" id="n_'+p.id+'" placeholder="Catatan (opsional)"><button class="btn" onclick="mon(\''+p.id+'\')">Simpan kondisi</button></div>'});return h}
+function mon(id){S.logs.push({p:id,t:'m',d:T,c:document.getElementById('c_'+id).value,n:document.getElementById('n_'+id).value.trim()});save();draw()}
+function viewJ(){var h='<div class="m">Atur interval (hari). Sesuaikan dengan cuaca dan kondisi tanah.</div><button class="btn" onclick="startW()">▶ Mulai siram hari ini (semua tanaman)</button>';S.plants.forEach(function(p){
+h+='<div class="card"><div class="t">'+p.e+' '+p.n+'</div><div class="sm"><div><label>Siram tiap (hari)</label><input type="number" min="1" value="'+p.w+'" onchange="setI(\''+p.id+'\',\'w\',this.value)"></div><div><label>Pupuk tiap (hari)</label><input type="number" min="1" value="'+p.f+'" onchange="setI(\''+p.id+'\',\'f\',this.value)"></div></div><div class="m" style="margin-top:6px">Siram: '+stat(nextD(p,'w'))+'<br>Pupuk: '+stat(nextD(p,'f'))+'<br>Jenis pupuk: '+esc(p.fn)+'</div><button class="btn" style="background:#1976d2" onclick="startW(\''+p.id+'\')">▶ Mulai siram hari ini</button> <button class="btn" style="background:#8e24aa" onclick="startW(\''+p.id+'\',\'f\')">▶ Mulai pupuk hari ini</button></div>'});return h}
+function tot(p){var t=0,n=0;S.logs.forEach(function(l){if(l.p==p.id&&l.t=='k'){t+=+l.kg;n++}});return n?Math.round(t*10)/10:null}
+function hs(p){var t=tot(p);return t!==null?t:(p.h===undefined||p.h===''?null:+p.h)}
+function avg(p){var j=+p.j,h=hs(p);return j>0&&h!==null?(h/j).toFixed(1).replace('.0','')+' kg/pohon':'-'}
+function viewD(){var h='<div class="m">Isi manual jumlah pohon dan hasil panen (kg). Jika ada Catatan Panen, total hasil dihitung otomatis dari catatan itu. Rata-rata per pohon dihitung otomatis.</div>';S.plants.forEach(function(p){
+h+='<div class="card"><div class="t">'+p.e+' '+p.n+'</div><div class="sm"><div><label>Jumlah pohon</label><input type="number" min="0" inputmode="numeric" placeholder="Isi jumlah" value="'+(p.j||'')+'" oninput="setJ(\''+p.id+'\',this.value)"></div><div><label>Hasil panen manual (kg)</label><input type="number" min="0" step="0.1" inputmode="decimal" placeholder="Isi hasil" value="'+(p.h===undefined?'':p.h)+'" oninput="setH(\''+p.id+'\',this.value)"></div></div><div class="m" style="margin-top:6px">Rata-rata: <b id="a_'+p.id+'">'+avg(p)+'</b></div></div>'});return h}
+function upA(id){var e=document.getElementById('a_'+id);if(e)e.textContent=avg(nm(id))}
+function setH(id,v){nm(id).h=v===''?'':Math.max(0,parseFloat(v)||0);save();upA(id)}
+function setJ(id,v){nm(id).j=v===''?'':Math.max(0,parseInt(v)||0);save();upA(id)}
+function startW(id,t){t=t||'w';var a=id?[nm(id)]:S.plants;a.forEach(function(p){p.o=p.o||{};p.o[t]=T});save();tab='h';draw()}
+function setI(id,t,v){v=Math.max(1,parseInt(v)||1);nm(id)[t]=v;save();draw()}
+var FK='';
+function rep(){var from=new Date();from.setDate(from.getDate()-range+1);var fk=FK=key(from),R=[];
+var lo=S.logs.filter(function(l){return l.d>=fk&&l.d<=T&&nm(l.p)}),c=function(t){return lo.filter(function(l){return l.t==t}).length},kg=0;lo.forEach(function(l){if(l.t=='k')kg+=+l.kg});
+var late=tasks().filter(function(x){return diff(x.nx,T)<0}),up=tasks().filter(function(x){var d=diff(x.nx,T);return d>=0&&d<=3});
+R.push(['sec','📊 RINGKASAN']);R.push(['ln','Penyiraman: '+c('w')+' kali']);R.push(['ln','Pemupukan: '+c('f')+' kali']);R.push(['ln','Pemantauan: '+c('m')+' catatan']);R.push(['ln','Pupuk/obat: '+c('i')+' catatan']);R.push(['ln','Panen: '+(Math.round(kg*10)/10)+' kg']);R.push(['ln','Tugas terlambat: '+late.length]);
+R.push(['sec','✅ KEGIATAN']);var days={};lo.forEach(function(l){(days[l.d]=days[l.d]||[]).push(l)});var ks=Object.keys(days).sort();
+if(!ks.length)R.push(['ln','Belum ada kegiatan tercatat.']);
+ks.forEach(function(k){R.push(['day',fmt(k)]);days[k].forEach(function(l){R.push(['ln',lg(l,nm(l.p)).replace(/^ \S+ /,'')])})});
+var jp=S.plants.filter(function(p){return (p.j!==undefined&&p.j!=='')||(hs(p)!==null)});
+if(jp.length){R.push(['sec','🌱 DATA POHON & HASIL']);jp.forEach(function(p){R.push(['ln',p.n+': '+(p.j||0)+' pohon, hasil '+(hs(p)||0)+' kg (rata-rata '+avg(p)+')'])})}
+if(late.length){R.push(['sec','⚠️ PERLU PERHATIAN']);late.forEach(function(x){R.push(['ln',TN[x.t]+' '+x.p.n+' terlambat '+(-diff(x.nx,T))+' hari'])})}
+if(up.length){R.push(['sec','📌 JADWAL HARI INI & 3 HARI KE DEPAN']);up.forEach(function(x){R.push(['ln',TN[x.t]+' '+x.p.n+' ('+fmt(x.nx)+')'])})}
+return R}
+function report(){var R=rep(),L=['━━━━━━━━━━━━━━━━━━','🌳 *LAPORAN KEBUN VILLA ULIN*','━━━━━━━━━━━━━━━━━━','Periode : '+fmt(FK)+' - '+fmt(T),'Dibuat  : '+new Date().toLocaleString('id-ID',{dateStyle:'medium',timeStyle:'short'})];
+R.forEach(function(r){if(r[0]=='sec'){L.push('');L.push('*'+r[1]+'*')}else if(r[0]=='day')L.push('📅 '+r[1]);else L.push('   • '+r[1])});
+L.push('');L.push('──────────────────');L.push('_by BTN165 (Kang Malvie)_');return L.join('\n')}
+function imgR(){var R=rep(),W=720,P=36,tc=document.createElement('canvas').getContext('2d'),rows=[];tc.font='20px sans-serif';
+function wrap(t,x,type){var w=t.split(' '),l='';w.forEach(function(q){var n=l?l+' '+q:q;if(tc.measureText(n).width>W-P*2-x&&l){rows.push([type,l,x]);l=q}else l=n});rows.push([type,l,x])}
+R.forEach(function(r){if(r[0]=='sec')rows.push(['sec',r[1],0,1]);else if(r[0]=='day')rows.push(['day',r[1],0]);else wrap('• '+r[1],14,'ln')});
+var H=150+rows.length*32+rows.filter(function(r){return r[0]=='sec'}).length*18+110,cv=document.createElement('canvas');cv.width=W;cv.height=H;var c=cv.getContext('2d');
+c.fillStyle='#f6f7f2';c.fillRect(0,0,W,H);c.fillStyle='#2e7d32';c.fillRect(0,0,W,120);c.fillStyle='#fff';c.font='bold 30px sans-serif';c.fillText('🌳 LAPORAN KEBUN VILLA ULIN',P,56);c.font='20px sans-serif';c.fillText('Periode: '+fmt(FK)+' - '+fmt(T),P,92);
+var y=160;rows.forEach(function(r){if(r[0]=='sec'){y+=14;c.fillStyle='#2e7d32';c.font='bold 22px sans-serif';c.fillText(r[1],P,y);c.fillRect(P,y+6,W-P*2,2);y+=32}else{c.fillStyle=r[0]=='day'?'#1e2a1e':'#333';c.font=(r[0]=='day'?'bold ':'')+'20px sans-serif';c.fillText(r[1],P+r[2],y);y+=32}});
+c.fillStyle='#ccd3c6';c.fillRect(P,H-86,W-P*2,2);c.textAlign='center';c.fillStyle='#2e7d32';c.font='bold 22px sans-serif';c.fillText('by BTN165 (Kang Malvie)',W/2,H-50);c.fillStyle='#6b786b';c.font='16px sans-serif';c.fillText('Persembahan BTN165 - Kang Malvie Official',W/2,H-24);
+cv.toBlob(function(b){try{var f=new File([b],'laporan-kebun.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:'Laporan Kebun Villa Ulin'}).catch(function(){});return}}catch(e){}
+var o=document.createElement('div');o.style.cssText='position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.85);overflow:auto;padding:16px;text-align:center';o.innerHTML='<div style="color:#fff;margin-bottom:8px">Tekan lama gambar untuk menyimpan</div><img src="'+cv.toDataURL()+'" style="max-width:100%;border-radius:8px"><br><button class="btn" onclick="this.parentNode.remove()">Tutup</button>';document.body.appendChild(o)},'image/png')}
+function viewL(){return '<div class="card"><label>Periode laporan</label><select onchange="range=+this.value;draw()"><option value="1" '+(range==1?'selected':'')+'>Hari ini</option><option value="7" '+(range==7?'selected':'')+'>7 hari</option><option value="30" '+(range==30?'selected':'')+'>30 hari</option></select><pre>'+esc(report())+'</pre></div><div class="m">Gunakan tombol di bawah untuk membagikan laporan.</div><div class="card"><div class="t">💾 Cadangan Data</div><div class="m">Simpan cadangan supaya data tidak hilang kalau HP diganti atau browser dibersihkan.</div><div class="sm"><button class="btn" onclick="bkShare()">Bagikan cadangan</button><button class="btn" onclick="bkCopy()">Salin cadangan</button></div><label style="display:block;margin-top:10px">Pulihkan: tempel teks cadangan di sini</label><textarea id="rs" rows="3" style="width:100%;margin-top:6px;padding:8px;border:1px solid var(--ln);border-radius:8px;background:var(--bg);color:var(--tx)"></textarea><button class="btn" onclick="restore()">Pulihkan data</button><div class="m">Memulihkan akan menimpa data yang ada sekarang.</div></div>'}
+
+function lg(l,p){if(l.t=='m')return ' 🔍 '+p.n+': '+l.c+(l.n?' ('+l.n+')':'');if(l.t=='i')return ' 🧪 '+p.n+': '+l.k+' '+l.b+(l.o?' ('+l.o+')':'');if(l.t=='k')return ' 🧺 Panen '+p.n+': '+l.kg+' kg'+(l.q?' ('+l.q+')':'');return ' ✅ '+TN[l.t]+' '+p.n}
+function opts(){return S.plants.map(function(p){return'<option value="'+p.id+'">'+p.e+' '+p.n+'</option>'}).join('')}
+function v(id){return document.getElementById(id).value.trim()}
+function addI(){if(!v('i_b')){alert('Isi nama bahan');return}S.logs.push({p:v('i_p'),t:'i',d:v('i_d')||T,k:v('i_k'),b:v('i_b'),o:v('i_o')});save();draw()}
+function addK(){var kg=parseFloat(v('k_kg'));if(!(kg>0)){alert('Isi hasil panen (kg)');return}S.logs.push({p:v('k_p'),t:'k',d:v('k_d')||T,kg:kg,q:v('k_q')});save();draw()}
+function del(i){S.logs.splice(i,1);save();draw()}
+function list(t){var h='';var a=[];S.logs.forEach(function(l,i){if(l.t==t)a.push([l,i])});a.sort(function(x,y){return x[0].d<y[0].d?1:-1});a.slice(0,15).forEach(function(x){var l=x[0],p=nm(l.p);if(!p)return;h+='<div class="row" style="padding:6px 0;border-top:1px solid var(--ln)"><div class="g"><div class="t" style="font-size:14px">'+fmt(l.d)+' - '+p.e+' '+p.n+'</div><div class="m">'+esc(lg(l,p).replace(/^ \S+ /,''))+'</div></div><button class="btn" style="background:var(--wa);padding:5px 10px;margin:0" onclick="del('+x[1]+')">✕</button></div>'});return h||'<div class="m">Belum ada catatan</div>'}
+function viewC(){var KI=['Pupuk','Pupuk daun','Insektisida','Fungisida','Lainnya'],KQ=['Bagus','Sedang','Reject'];
+return '<div class="card"><div class="t">🧪 Catatan Pupuk / Obat</div><select id="i_p">'+opts()+'</select><select id="i_k">'+KI.map(function(k){return'<option>'+k+'</option>'}).join('')+'</select><input type="text" id="i_b" placeholder="Nama bahan (mis. NPK 16-16-16)"><input type="text" id="i_o" placeholder="Dosis (mis. 2 kg/pohon)"><label>Tanggal</label><input type="date" id="i_d" value="'+T+'"><button class="btn" onclick="addI()">Simpan catatan</button><div style="margin-top:8px">'+list('i')+'</div></div>'+
+'<div class="card"><div class="t">🧺 Catatan Panen</div><select id="k_p">'+opts()+'</select><input type="number" id="k_kg" min="0" step="0.1" inputmode="decimal" placeholder="Hasil panen (kg)"><select id="k_q">'+KQ.map(function(k){return'<option>'+k+'</option>'}).join('')+'</select><label>Tanggal</label><input type="date" id="k_d" value="'+T+'"><button class="btn" onclick="addK()">Simpan panen</button><div style="margin-top:8px">'+list('k')+'</div></div>'}
+function bk(){return JSON.stringify(S)}
+function bkShare(){var t=bk();if(navigator.share){navigator.share({title:'Cadangan Kebun Villa Ulin',text:t}).catch(function(){})}else bkCopy()}
+function bkCopy(){var t=bk();try{navigator.clipboard.writeText(t).then(function(){alert('Cadangan disalin. Simpan di catatan/WhatsApp Anda.')},function(){fb(t)})}catch(e){fb(t)}}
+function restore(){var t=document.getElementById('rs').value.trim();try{var o=JSON.parse(t);if(!o.plants||!o.logs)throw 0;o.alarms=o.alarms||[];S=o;save();alert('Data berhasil dipulihkan');draw()}catch(e){alert('Data cadangan tidak valid')}}
+
+var G={
+mangga:{c:['Fase berbuah: siram dalam dan teratur, hindari kering lama lalu basah mendadak (penyebab buah pecah dan rontok).','Pupuk kalium, kalsium, boron saat buah membesar; kurangi nitrogen.','Bungkus buah dengan kertas atau plastik berlubang bawah; jangan plastik bening tertutup.','Jarangkan buah yang terlalu banyak, buang buah rontok dan busuk.','Setelah panen: pangkas untuk membuka tajuk, beri pupuk organik.'],h:[['Antraknosa (jamur)','Bercak hitam di daun, bunga, buah; buah busuk.','Pangkas bagian sakit, bersihkan serasah, semprot fungisida (mankozeb/tembaga) sesuai label, jaga tajuk tidak lembap.'],['Lalat buah','Buah berlubang kecil, busuk, ada belatung.','Bungkus buah, pasang perangkap metil eugenol, kubur atau buang buah jatuh.'],['Wereng mangga','Bunga rontok, embun lengket, jamur jelaga hitam.','Semprot insektisida saat tunas dan bunga muncul, jaga tajuk bersih.'],['Thrips','Kulit buah kasar keperakan, buah kecil gugur.','Semprot insektisida sesuai label, kurangi gulma di bawah pohon.'],['Embun tepung','Serbuk putih di bunga dan tunas, bunga gugur.','Semprot belerang atau fungisida sistemik sesuai label.'],['Busuk buah (jamur/bakteri)','Kulit pecah, bagian dalam hitam cokelat.','Atur air, tambah kalsium, buang buah sakit, fungisida.']]},
+belimbing:{c:['Siram teratur, jangan sampai tergenang.','Pupuk dengan kalium tinggi saat berbuah, tambah organik.','Wajib bungkus buah sejak kecil untuk lawan lalat buah.','Jarangkan buah, pangkas cabang tak produktif.'],h:[['Lalat buah (hama utama)','Buah bercak, berlubang, busuk dan jatuh.','Bungkus buah, perangkap metil eugenol, buang buah jatuh.'],['Antraknosa / busuk buah','Bercak cokelat hitam di buah.','Fungisida sesuai label, kurangi kelembapan, buang buah sakit.'],['Bercak daun','Bercak cokelat di daun, daun gugur.','Pangkas daun sakit, semprot fungisida tembaga.'],['Kutu putih','Koloni putih berkapas di ranting dan buah.','Semprot air kuat atau insektisida, bersihkan semut.']]},
+lengkeng:{c:['Pupuk kalium dan boron saat berbuah; hindari nitrogen berlebih.','Siram teratur terutama saat buah membesar.','Setelah panen: pangkas ranting dan beri pupuk dasar organik.','Sanggah cabang yang berat bermuatan buah.'],h:[['Tungau/sapu setan','Tunas dan bunga keriting bergerombol seperti sapu.','Pangkas dan bakar bagian sakit, semprot akarisida sesuai label.'],['Kepik penghisap','Buah muda gugur, kulit bintik.','Tangkap atau semprot insektisida sesuai label.'],['Embun tepung','Serbuk putih di malai bunga.','Fungisida belerang, jaga sirkulasi udara.'],['Kutu putih / kutu daun','Daun melengkung, embun lengket.','Semprot insektisida, kendalikan semut.']]},
+durian:{c:['Pastikan drainase baik, air jangan menggenang di pangkal.','Pupuk kalium dan kalsium saat buah, tambah organik.','Sanggah cabang yang menahan buah berat, jarangkan buah.','Jaga batang bersih, hindari luka dan jangan mulsa menempel batang.'],h:[['Busuk batang/akar (Phytophthora)','Getah keluar dari batang, kulit busuk, daun menguning layu. Paling berbahaya.','Kerok bagian sakit sampai sehat, oles fungisida (metalaksil/fosetil-Al), perbaiki drainase, beri Trichoderma.'],['Penggerek buah','Lubang kecil dan kotoran di buah.','Bungkus buah, buang buah terserang, insektisida sesuai label.'],['Penggerek batang','Lubang dan serbuk kayu di batang atau cabang.','Cungkil larva, suntik atau tutup lubang, jaga batang bersih.'],['Hawar daun','Daun bercak, mengering, gugur.','Pangkas daun sakit, fungisida tembaga.']]},
+nangka:{c:['Pupuk organik dan kalium saat berbuah.','Bungkus buah untuk cegah lalat dan busuk.','Sanggah buah besar atau ikat agar tangkai tidak patah.','Pangkas cabang kering dan sakit.'],h:[['Busuk buah (Rhizopus)','Buah lunak, berbulu hitam, berair.','Buang buah sakit, bungkus buah, jaga lembap tidak berlebih.'],['Lalat buah','Buah berlubang, busuk.','Bungkus buah, perangkap metil eugenol.'],['Penggerek batang/cabang','Serbuk kayu dan lubang di batang.','Cungkil larva dan tutup lubang.'],['Kutu putih','Koloni putih di tangkai dan buah.','Semprot insektisida sesuai label.']]},
+jeruk:{c:['Pupuk NPK seimbang dan organik rutin.','Siram teratur, jangan tergenang.','Pangkas ringan agar tajuk terbuka dan cahaya masuk.','Panen daun dan buah secara bergilir.'],h:[['CVPD/Huanglongbing','Daun belang kuning tulang daun hijau, buah kecil. Belum ada obat.','Cabut dan musnahkan pohon sakit, kendalikan kutu loncat, pakai bibit sehat.'],['Penggorok daun','Daun muda keriting dengan alur putih berliku.','Pangkas pucuk terserang, semprot insektisida sesuai label.'],['Gumosis (Phytophthora)','Getah keluar dari batang, kulit busuk.','Kerok bagian sakit, oles fungisida, perbaiki drainase.'],['Kutu daun / kutu sisik','Daun melengkung, embun lengket, jamur jelaga.','Semprot insektisida, bersihkan semut.']]},
+rambutan:{c:['Siram teratur saat bunga dan buah.','Pupuk kalium dan boron saat berbuah, kurangi nitrogen.','Setelah panen: pangkas dan beri pupuk dasar organik.','Jaga kebersihan tajuk agar jamur tidak berkembang.'],h:[['Embun tepung','Serbuk putih di bunga, bunga gugur.','Semprot belerang atau fungisida sesuai label.'],['Antraknosa / busuk buah','Bercak hitam di buah dan malai.','Fungisida sesuai label, buang buah sakit.'],['Penggerek buah','Buah berlubang, ada ulat di dalam.','Buang buah terserang, insektisida sesuai label.'],['Kutu putih / kutu daun','Koloni putih, daun melengkung.','Semprot insektisida, kendalikan semut.']]}};
+function viewG(){var h='<details class="gd" open><summary>🗓️ Pola Pengurusan Rutin</summary><ul><li><b>Harian:</b> cek buah rontok, buang buah busuk dari tanah.</li><li><b>Mingguan:</b> periksa daun, bunga, buah (hama dan bercak); cek kelembapan tanah 10-15 cm.</li><li><b>Tiap 2 minggu:</b> semprot pencegahan bila perlu.</li><li><b>Bulanan:</b> pupuk, bersihkan gulma, pangkas ranting mati.</li><li><b>Setelah panen:</b> pangkas, pupuk dasar organik, kapur bila tanah asam.</li></ul></details>';
+S.plants.forEach(function(p){var g=G[p.id];if(!g)return;h+='<details class="gd"><summary>'+p.e+' '+p.n+'</summary><div class="m">Pola pengurusan</div><ul>'+g.c.map(function(x){return'<li>'+x+'</li>'}).join('')+'</ul><div class="m">Hama dan penyakit</div>'+g.h.map(function(x){return'<div class="hp"><b>'+x[0]+'</b><div>🔎 '+x[1]+'</div><div>🛠️ '+x[2]+'</div></div>'}).join('')+'<div style="height:8px"></div></details>'});
+h+='<div class="card"><div class="t">⚠️ Keselamatan semprot</div><ul style="margin:6px 0 0;padding-left:18px;font-size:14px"><li>Ikuti dosis dan jeda panen di label.</li><li>Pakai masker, sarung tangan, baju lengan panjang.</li><li>Jangan semprot siang saat bunga mekar (penyerbuk).</li><li>Ganti bahan aktif bergantian agar hama tidak kebal.</li></ul><div class="m" style="margin-top:6px">Panduan ini bersifat umum. Untuk diagnosis pasti, tanyakan ke penyuluh pertanian (PPL) atau toko pertanian terdekat, dan catat hasilnya di menu Catatan.</div></div>';return h}
+
+var AU=null,ring=null,fired={},WL=null,DN=['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+function pad(n){return String(n).padStart(2,'0')}
+function beep(){try{AU=AU||new (window.AudioContext||window.webkitAudioContext)();if(AU.state=='suspended')AU.resume();var o=AU.createOscillator(),g=AU.createGain();o.frequency.value=880;g.gain.value=.3;o.connect(g);g.connect(AU.destination);o.start();setTimeout(function(){o.stop()},350)}catch(e){}}
+function enableA(){beep();try{if(window.Notification&&Notification.permission=='default')Notification.requestPermission()}catch(e){}alert('Suara dan notifikasi diaktifkan. Biarkan halaman ini tetap terbuka.')}
+function wl(on){try{if(on&&navigator.wakeLock){navigator.wakeLock.request('screen').then(function(x){WL=x}).catch(function(){})}else if(WL){WL.release();WL=null}}catch(e){}}
+function stopRing(){if(ring){clearInterval(ring);ring=null}var o=document.getElementById('ov');if(o)o.remove()}
+function snooze(a){stopRing();setTimeout(function(){startRing(a)},600000)}
+function startRing(a){if(ring)return;var o=document.createElement('div');o.id='ov';o.style.cssText='position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#fff;text-align:center;padding:24px';o.innerHTML='<div style="font-size:56px">⏰</div><div style="font-size:22px;font-weight:700">'+esc(a.l)+'</div><div style="font-size:18px">'+a.t+'</div><button class="btn" style="font-size:18px;padding:14px 28px" onclick="stopRing()">Sudah, matikan</button><button class="btn" style="background:#546e7a" onclick="snooze(window._a)">Tunda 10 menit</button>';window._a=a;document.body.appendChild(o);ring=setInterval(function(){beep();try{navigator.vibrate&&navigator.vibrate([300,150,300])}catch(e){}},1000);beep();try{if(window.Notification&&Notification.permission=='granted')new Notification('⏰ '+a.l,{body:'Jam '+a.t})}catch(e){}}
+function tick(){var n=new Date(),hm=pad(n.getHours())+':'+pad(n.getMinutes());S.alarms.forEach(function(a){var k=a.id+key()+hm;if(a.on&&a.t==hm&&a.d.indexOf(n.getDay())>=0&&!fired[k]){fired[k]=1;startRing(a)}})}
+setInterval(tick,10000);
+function addA(){var d=[];for(var i=0;i<7;i++)if(document.getElementById('ad'+i).checked)d.push(i);var t=v('a_t');if(!t||!d.length){alert('Pilih jam dan minimal satu hari');return}S.alarms.push({id:Date.now(),t:t,d:d,l:v('a_l')||'Siram kebun',on:true});save();draw()}
+function togA(i){S.alarms[i].on=!S.alarms[i].on;save();draw()}
+function delA(i){S.alarms.splice(i,1);save();draw()}
+function viewA(){var h='<div class="card"><div class="t">⏰ Alarm Pengingat</div><div class="m">Setel sendiri sesuai kebutuhan. Alarm hanya berbunyi saat halaman ini terbuka, jadi biarkan aplikasi terbuka dan layar menyala.</div><button class="btn" onclick="enableA()">🔔 Aktifkan suara &amp; notifikasi</button><label style="display:flex;gap:8px;align-items:center;margin-top:10px;font-size:14px;color:var(--tx)"><input type="checkbox" onchange="wl(this.checked)"> Jaga layar tetap menyala</label></div>';
+h+='<div class="card"><div class="t">Tambah alarm</div><label>Jam</label><input type="time" id="a_t" value="16:00" style="width:100%;padding:8px;border:1px solid var(--ln);border-radius:8px;background:var(--bg);color:var(--tx);font-size:16px;margin-top:6px"><label style="display:block;margin-top:8px">Hari</label><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">'+DN.map(function(n,i){return'<label style="display:flex;gap:4px;align-items:center;font-size:14px;color:var(--tx)"><input type="checkbox" id="ad'+i+'">'+n+'</label>'}).join('')+'</div><input type="text" id="a_l" value="Siram kebun" placeholder="Pesan alarm"><button class="btn" onclick="addA()">Tambah alarm</button></div>';
+if(!S.alarms.length)h+='<div class="m">Belum ada alarm.</div>';
+S.alarms.slice().sort(function(a,b){return a.t<b.t?-1:1}).forEach(function(a){var i=S.alarms.indexOf(a);h+='<div class="card row '+(a.on?'':'done')+'"><div class="g"><div class="t" style="font-size:22px">'+a.t+'</div><div class="m">'+esc(a.l)+' • '+a.d.map(function(x){return DN[x]}).join(', ')+'</div></div><input class="ck" type="checkbox" '+(a.on?'checked':'')+' onchange="togA('+i+')"><button class="btn" style="background:var(--wa);padding:5px 10px;margin:0" onclick="delA('+i+')">✕</button></div>'});return h}
+function draw(){document.getElementById('tabs').innerHTML=tabsH();document.getElementById('v').innerHTML={h:viewH,a:viewA,p:viewP,j:viewJ,d:viewD,c:viewC,g:viewG,l:viewL}[tab]()}
+function shareR(){var t=report();if(navigator.share){navigator.share({title:"Laporan Kebun Villa Ulin",text:t}).catch(function(){})}else copyR()}
+function waR(){window.open('https://wa.me/?text='+encodeURIComponent(report()),'_blank')}
+function copyR(){var t=report();try{navigator.clipboard.writeText(t).then(function(){alert('Laporan disalin')},function(){fb(t)})}catch(e){fb(t)}}
+function fb(t){var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');alert('Laporan disalin')}catch(e){}a.remove()}
+document.getElementById('dt').textContent=fmt(T)+' • Fase berbuah';
+draw();
+</script></body></html>
